@@ -73,6 +73,14 @@ if ! grep "$new_version$" CHANGELOG.md; then
     exit 1
 fi
 
+# Make sure the changelog doesn't contain duplicate issue numbers
+nonunique_issue_numbers=$(grep -o -P '#[\d]+' CHANGELOG.md | sort)
+unique_issue_numbers=$(grep -o -P '#[\d]+' CHANGELOG.md | sort -u)
+if [ "$nonunique_issue_numbers" != "$unique_issue_numbers" ]; then
+    echo >&2 "ERROR: Duplicate issue numbers in changelog."
+    exit 1
+fi
+
 echo "INFO: Checking that all changes are commited and pushed"
 git pull
 
@@ -105,4 +113,4 @@ git commit -m "Update version to $new_version"
 git tag -a "$new_tag_name" -m "Version ${new_version}"
 
 echo "INFO: done."
-echo "INFO: Now you can push this local branch to the GitHub repository."
+echo "INFO: Now you can push this local branch to the GitHub repository: \`git push <remote> master $new_tag_name\`"
